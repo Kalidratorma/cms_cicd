@@ -1,0 +1,14 @@
+---
+- hosts: ansible
+  
+  tasks:
+  - name: create docker image
+    command: docker build --build-arg VERSION={{VERSION}} -t kalidratorma/cms-core:{{VERSION}} .
+    args: 
+     chdir: /opt/cms 
+
+#  - name: create tag to push mage onto dockerhub
+#    command: docker tag cms-core:{{VERSION}} kalidratorma/cms-core:{{VERSION}}
+
+  - name: push docker image
+    command: docker push kalidratorma/cms-core:{{VERSION}}

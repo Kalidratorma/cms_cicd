@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cms-core
+  name: cms-core
+  namespace: default
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: cms-core
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: cms-core
+    spec:
+      volumes:
+      - name: tls
+        secret:
+          secretName: tls-secret
+      containers:
+      - env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: POSTGRES_HOST
+              name: postgres-config
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              key: POSTGRES_DB
+              name: postgres-config
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: db-credentials
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: db-credentials
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: jwt-secret
+        - name: TLS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: tls-secret
+        image: kalidratorma/cms-core:$VERSION
+        imagePullPolicy: Always
+        name: cms-core
+        ports:
+        - containerPort: 8443
+          protocol: TCP
+#        readinessProbe:
+#          httpGet:
+#            port: 8443
+#            path: /actuator/health/readiness
+#        livenessProbe:
+#          httpGet:
+#            port: 8443
+#            path: /actuator/health/liveness
+        volumeMounts:
+        - name: tls
+          mountPath: /tls
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

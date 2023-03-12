@@ -1,0 +1,18 @@
+---
+- hosts: dockerhost
+
+  tasks:
+  - name: stop existing container
+    command: docker stop cms-core
+    ignore_errors: yes
+  
+  - name: remove the container
+    command: docker rm cms-core
+    ignore_errors: yes
+
+  - name: remove image
+    command: docker rmi kalidratorma/cms-core:latest
+    ignore_errors: yes
+
+  - name: create container
+    command: docker run -d --name regapp-server -p 8082:8000 kalidratorma/cms-core:latest

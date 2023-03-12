@@ -1,0 +1,15 @@
+---
+- hosts: kubernetes
+#  become: true
+  user: root
+
+  tasks:
+  - name: deploy regapp on kubernetes
+    shell: envsubst < cms-core-deployment.yml | kubectl apply -f -
+  - name: create service for regapp
+    command: kubectl apply -f cms-core-service.yml
+  - name: update deployment with new pods if image updated in docker hub
+    command: kubectl rollout restart deployment.apps/cms-core
+    
+  environment:
+    VERSION: "{{ VERSION }}"
